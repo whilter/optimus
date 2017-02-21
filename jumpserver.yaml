@@ -1,0 +1,88 @@
+heat_template_version: 2015-10-15
+
+description: jumpserver
+
+parameter_groups:
+
+parameters:
+
+  # network parameters
+  public_network:
+    type: string
+    description: name of public network used for creation of floating_ip and router
+    default: float_intranet
+
+  fips:
+    type: string
+    description: ID of the floating IP address
+    default:  
+
+  network_name:
+    type: string
+    description: determines name for network to be created
+    default: internal_bamboo_agents_net
+
+  # instance parameters
+  image:
+    type: string
+    description: os version we want to use in this build
+    default: 12f68299-099e-472e-9bea-3f318a9e3bde
+    constraints:
+      - custom_constraint: glance.image
+
+  instance_type:
+    type: string
+    description: determines flavor used in this build
+    default: a8327359-d745-4ec4-972d-27f0e3c41e29
+    constraints:
+      - custom_constraint: nova.flavor
+
+  sshkey:
+    type: string
+    description: determines which public keys will be used for cloud-user login
+    constraints:
+      - custom_constraint: nova.keypair
+
+  git_url:
+    type: string
+    description: git url without username@ prefix, see default
+    default: stash.wob.vw.vwg:8443/stash/scm/cocoa/ci-build-agents.git
+
+  path_to_master:
+    type: string
+    description: path to master.yaml file 
+    default: /ci-build-agents/ansible/jumpserver.yaml
+
+  git_username:
+    type: string
+    description: git username with access to ci-build project in bitbucket
+    constraints:
+      - allowed_values: ["cocoa"]
+
+  git_password:
+    type: string
+    description: git password
+    hidden: true
+
+
+resources:
+
+  # instance
+  jumpserver:
+    type: OS::Nova::Server
+    properties:
+      name: jumpserversa
+      image: { get_param: image }
+      flavor: { get_param: instance_type }
+      key_name: { get_param: sshkey }
+      networks:
+        - network: {get_param: network_name}
+      security_groups:
+        - default
+
+  jumpserver_floating_ip_association:
+    type: OS::Nova::FloatingIPAssociation
+    properties:
+      floating_ip: { get_param: fips }
+      server_id: { get_resource: jumpserver }
+
