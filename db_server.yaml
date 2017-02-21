@@ -1,0 +1,43 @@
+heat_template_version: 2015-10-15
+description: Cocoa onboarding project - db server instance  
+ 
+parameters:
+
+  key_name:
+    type: string
+    description: Which public keys will be used for cloud-user login
+    constraints:
+      - custom_constraint: nova.keypair
+  
+  flavor:
+    type: string
+    description: Which flavor will be used for the instances
+    default: m1.small
+    constraints:
+      - custom_constraint: nova.flavor
+
+  image:
+    type: string
+    description: Which OS version will be used in this build
+    constraints:
+      - custom_constraint: glance.image
+
+  network:
+    type: string
+    description: define network for app-servers builded
+    default: internal_network
+
+resources:
+  my_instance:
+    type: OS::Nova::Server
+    properties:
+      key_name: { get_param: key_name }
+      image: { get_param: image }
+      flavor: { get_param: flavor }
+      networks: [{network: {get_param: network} }]
+
+
+outputs:
+  instance_networks:
+    description: The IP addresses of the instance
+    value: { get_attr: [my_instance, networks] }
