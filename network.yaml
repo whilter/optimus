@@ -41,7 +41,6 @@ resources:
       router_id:  { get_resource: external_router }
       subnet: { get_resource: internal_subnet }
 
-
 outputs:
 
   external_router:

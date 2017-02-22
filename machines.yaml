@@ -39,6 +39,11 @@ parameters:
     constraints:
       - custom_constraint: glance.image
 
+  floating_ip_id:
+    type: string
+    description: ID of floating IP assigned to nginx lb_method
+    default: "to be changed"
+   
 resources:
 
     # Nginx server
@@ -87,6 +92,12 @@ resources:
         properties:
             protocol_port: 80
             pool_id: {get_resource: pool}
+    
+    association:
+        type: OS::Neutron::FloatingIPAssociation
+        properties:
+            floatingip_id: { get param: floating_ip_id }
+            port_id: { get_resource: pool }
 
     # Application servers
  
